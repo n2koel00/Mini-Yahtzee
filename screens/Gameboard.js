@@ -26,7 +26,7 @@ export default Gameboard = ({navigation, route}) => {
         useState(new Array(NBR_OF_DICE).fill(false));
     /*Arpakuutioiden silmäluvut */
     const [diceSpots, setDiceSpots] =
-        useState(new Array(NBR_OF_DICE)).fill(0);
+        useState(new Array(NBR_OF_DICE).fill(0));
     /*Valittujen arpakuutioiden kokonaispistemäärät */
     const [dicePointsTotal, setDicePointsTotal] =
         useState(new Array(MAX_SPOT).fill(0));
@@ -102,6 +102,18 @@ export default Gameboard = ({navigation, route}) => {
         }
       }
 
+      const chooseDicePoints = (i) => {
+        if (nbrOfThrowsLeft === 0) {
+            let selectedPoints = [...selectedDicePoints];
+            let points = [...dicePointsTotal];
+            if (!selectedPoints[i]) {
+                selectedPoints[i] = true;
+            }
+        } else {
+            setStatus("Throw " + NBR_OF_THROWS + " times before setting points.");
+        }
+      }
+
       function getDiceColor(i) {
           return selectedDice[i] ? "black" : "steelblue";
       }
@@ -121,6 +133,8 @@ export default Gameboard = ({navigation, route}) => {
       }
 
     return(
+        /**style={throwDice}*/
+        /*style={styles.playerName}*/
         <>
             <Header />
                 <View>
@@ -129,7 +143,7 @@ export default Gameboard = ({navigation, route}) => {
                     </Container>
                     <Text>Throws left: {nbrOfThrowsLeft}</Text>
                     <Text>{status}</Text>
-                    <Pressable /**style={throwDice}*/ onPress={() => throwDice()}>
+                    <Pressable onPress={() => throwDice()}>
                         <Text>THROW DICE</Text>
                     </Pressable>
                     <Container>
@@ -138,7 +152,7 @@ export default Gameboard = ({navigation, route}) => {
                     <Container>
                         <Row>{pointsToSelectRow}</Row>
                     </Container>
-                    <Text /*style={styles.playerName}*/>Player: {playerName}</Text>
+                    <Text>Player: {playerName}</Text>
                 </View>
             <Footer />
         </>
