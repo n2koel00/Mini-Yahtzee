@@ -42,7 +42,7 @@ export default Gameboard = ({navigation, route}) => {
     }, []);
 
 
-    /**luodaan arpakuutiorivi sarakkeittain (Col) */
+    /**luodaan arpakuutiorivi sarakkeittain (Col)  */
     const diceRow = [];
     for (let dice = 0; dice < NBR_OF_DICE; dice++) {
         diceRow.push(
