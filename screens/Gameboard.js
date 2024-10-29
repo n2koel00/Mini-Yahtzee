@@ -10,7 +10,8 @@ import {
     MIN_SPOT, 
     MAX_SPOT, 
     BONUS_POINTS, 
-    BONUS_POINTS_LIMIT 
+    BONUS_POINTS_LIMIT, 
+    SCOREBOARD_KEY
 } from "../constants/Game"
 import styles from "../style/style";
 
@@ -34,6 +35,7 @@ export default Gameboard = ({navigation, route}) => {
     const [selectedDicePoints, setSelectedDicePoints] = 
         useState(new Array(MAX_SPOT).fill(0));
     const [playerName, setPlayerName] = useState("");
+    const [scores, setScores] = useState([]);
 
     useEffect(() => {
         if (playerName === "" && route.params?.player) {
@@ -41,6 +43,47 @@ export default Gameboard = ({navigation, route}) => {
         }
     }, []);
 
+    useEffect(() => {
+        const unsubscribe = navigation.addListener("focus", () => {
+            getScoreboardData();
+        })
+        return unsubscribe; 
+    }, [navigation]);
+
+    const getScoreboardData = async() => {
+        try {
+            const jsonValue = await AsyncStorage.getItem(SCOREBOARD_KEY);
+            if (jsonValue !== null) {
+                const tmpScores = JSON.parse(jsonValue);
+                setScores(tmpScores);
+                console.log("Gameboard: READ SUCCESS");
+                console.log("Gameboard: NBR OF SCORES: " + tmpScores.length);
+            }
+        }
+        catch (e) {
+            console.log("Gameboard: Read error: " + e);
+        }
+    }
+
+    const savePlayerPoints = async () => {
+        const newKey = scores.length + 1;
+        const playerPoints = {
+            key: newKey,
+            name: playerName,
+            date: "date", // hae tänne pvm
+            time: "time", // hae tänne kellonaika
+            points: 0 // sijoita pisteet tähän
+        }
+        try {
+            const newScore = [...scores,playerpoints];
+            const jsonValue = JSON.stringify(newScore);
+            await AsyncStorage.setItem(SCOREBOARD_KEY, jsonValue);
+            console.log("Gameboard: Save success: " + jsonValue);
+        }
+        catch(e) {
+            console.log("Gameboard: save error: " + e);
+        }
+    }
 
     /**luodaan arpakuutiorivi sarakkeittain (Col)  */
     const diceRow = [];
@@ -69,7 +112,7 @@ export default Gameboard = ({navigation, route}) => {
             <Text 
             /**style={pointsStyle}*/ 
             key={"pointsRow" + spot}
-            >0
+            >{getSpotTotal(spot)}
             </Text>  
         </Col>
     );
@@ -80,12 +123,14 @@ export default Gameboard = ({navigation, route}) => {
     for (let diceButton=0; diceButton < MAX_SPOT; diceButton++) {
         pointsToSelectRow.push(
             <Col key={"buttonsRow" + diceButton}>
-                <Pressable key={"buttonsRow" + diceButton}>
+                <Pressable 
+                key={"buttonsRow" + diceButton}
+                onPress={() => chooseDicePoints(diceButton)}>
                     <MaterialCommunityIcons 
                     name={"numeric-" + (diceButton + 1) + "-circle"}
                     key={"buttonsRow" + diceButton}
                     size={35}
-                    color={"steelblue"}>
+                    color={getDicePointsColor(diceButton)}>
                     </MaterialCommunityIcons>
                 </Pressable>
             </Col>
@@ -108,15 +153,34 @@ export default Gameboard = ({navigation, route}) => {
             let points = [...dicePointsTotal];
             if (!selectedPoints[i]) {
                 selectedPoints[i] = true;
+                let nbrOfDice = 
+                diceSpots.reduce((total, x) => (x === (i + 1) ? total + 1: total), 0);
+                points[i] = nbrOfDice * (i + 1);
+                } 
+        else {
+            setStatus("You already selected points for " + (i + 1));
+            return points[i];
             }
-        } else {
+            setDicePointsTotal(points);
+            setSelectedDicePoints(selectedPoints);
+            return points[i];
+    }
+        else {
             setStatus("Throw " + NBR_OF_THROWS + " times before setting points.");
-        }
-      }
+            }
+  }
 
       function getDiceColor(i) {
           return selectedDice[i] ? "black" : "steelblue";
       }
+
+      function getDicePointsColor(i) {
+        return (selectedDicePoints[i] && !gameEndStatus) ? "black" : "steelblue";
+    }
+
+    function getSpotTotal(i) {
+        return dicePointsTotal[i];
+    }
 
       const throwDice = () => {
         let spots = [...diceSpots];
@@ -153,6 +217,9 @@ export default Gameboard = ({navigation, route}) => {
                         <Row>{pointsToSelectRow}</Row>
                     </Container>
                     <Text>Player: {playerName}</Text>
+                    <Pressable onPress={() => throwDice()}>
+                        <Text>Save Points</Text>
+                    </Pressable>
                 </View>
             <Footer />
         </>
