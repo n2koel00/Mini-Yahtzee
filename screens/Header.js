@@ -4,7 +4,7 @@ import styles from "../style/style";
 export default  Header = () => {
     return(
         <View style={styles.header}>
-            <Text styles={styles.title}>Mini Yahtzee</Text>
+            <Text style={styles.title}>Mini Yahtzee</Text>
         </View>
     )
 }

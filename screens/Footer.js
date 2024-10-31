@@ -4,7 +4,7 @@ import styles from "../style/style";
 export default Footer = () => {
     return(
         <View style={styles.footer}>
-            <Text styles={styles.author}>Author: Elias Konttaniemi</Text>
+            <Text style={styles.author}>Author: Elias Konttaniemi</Text>
         </View>
     )
 }
